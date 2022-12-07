@@ -125,7 +125,11 @@ namespace OpenTS2.Engine.Audio
 			while (i < convertedSize)
 			{
 				offset = i * x + headerOffset;
-				data[i] = (float)BitConverter.ToInt16(source, offset) / maxValue;
+                if (offset + 2 > source.Length)
+                {
+                    break;
+                }
+                data[i] = (float)BitConverter.ToInt16(source, offset) / maxValue;
 				++i;
 			}
 
