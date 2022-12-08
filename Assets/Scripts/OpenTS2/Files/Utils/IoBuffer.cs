@@ -198,6 +198,23 @@ namespace OpenTS2.Files.Utils
             return result;
         }
 
+        // https://modthesims.info/wiki.php?title=7BITSTR
+        public string ReadSevenBitString()
+        {
+            int stringLength = 0;
+
+            int nextByte = 0;
+            int i = 0;
+            while (((nextByte = ReadByte()) & 0x80) != 0)
+            {
+                stringLength |= (nextByte & 0x7F) << (7 * i);
+                i++;
+            }
+            stringLength |= (nextByte & 0x7F) << (7 * i);
+
+            return ReadCString(stringLength, true);
+        }
+
         /// <summary>
         /// Reads a byte from the current stream.
         /// </summary>

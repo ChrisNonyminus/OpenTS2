@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using OpenTS2.Game;
 using UnityEngine.UI;
+using OpenTS2.Files.Formats.RCOL;
 
 namespace OpenTS2.Engine.Tests
 {
@@ -70,6 +71,10 @@ namespace OpenTS2.Engine.Tests
             ObjectsText.text = objectStr;
             PopupBackgroundImage.texture = contentManager.Provider.GetAsset<TextureAsset>(new ResourceKey(0xA9600400, 0x499DB772, 0x856DDBAC)).Texture;
             BackgroundImage.texture = contentManager.Provider.GetAsset<TextureAsset>(new ResourceKey(0xCCC9AF70, 0x499DB772, 0x856DDBAC)).Texture;
+
+            // Using RCOLFile.GetModel, place the following model
+            var model = RCOLFile.GetModel("trashcan");
+            var gameobject = model.Spawn();
         }
     }
 }

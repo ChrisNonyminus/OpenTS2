@@ -19,6 +19,8 @@ namespace OpenTS2.Files.Formats.DBPF
         public const uint IMG = 0x856DDBAC;
         public const uint IMG2 = 0x8C3CE95A;
         public const uint DIR = 0xE86B1EEF;
+        public const uint GMDC = 0xAC4F8687;
+        public const uint LIFO = 0xED534136;
         /// <summary>
         /// Can be XA or MP3.
         /// </summary>
