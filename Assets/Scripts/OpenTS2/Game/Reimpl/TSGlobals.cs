@@ -2,18 +2,19 @@
 
 namespace OpenTS2.Game.Reimpl
 {
-    public class TSFamilyManager
+    public class TSGlobals
     {
-        internal TSFamily GetFamily(long groupID)
-        {
-            throw new NotImplementedException();
-        }
-        internal TSFamily GetFamily(string groupName)
+        internal TSFamilyManager FamilyManager()
         {
             throw new NotImplementedException();
         }
 
-        internal TSFamily GetFamilyByLotID(uint lotID)
+        internal TSLotCatalog GetLotCatalog()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal TSNeighborhood GetNeighborhood()
         {
             throw new NotImplementedException();
         }

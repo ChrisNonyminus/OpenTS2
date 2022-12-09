@@ -2,9 +2,9 @@
 
 namespace OpenTS2.Game.Reimpl
 {
-    public class TSNeighborManager
+    public class TSNeighbor
     {
-        public TSNeighbor GetNeighbor(uint lotID, int v)
+        internal long GetPersonData(int v)
         {
             throw new NotImplementedException();
         }

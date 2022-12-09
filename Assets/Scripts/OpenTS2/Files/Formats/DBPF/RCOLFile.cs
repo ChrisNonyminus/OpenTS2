@@ -1136,7 +1136,7 @@ groupMaterialDefs:
     Keys: {string.Join(", ", groupMaterialDefs.Keys)}
     Values: {string.Join(", ", groupMaterialDefs.Values.Select(m => $"{m.MaterialType} ({m.MaterialDescription})"))}
 ");
-            for (int i = 0; i < GMDCData.Groups.Count; i++)
+            for (int i = 0; i < GMDCData.model.meshes.Count; i++)
             {
                 var thisGroup = new GameObject(GMDCData.Groups[i].groupName);
                 thisGroup.transform.parent = modelGameObject.transform;
@@ -1156,16 +1156,26 @@ groupMaterialDefs:
                         if (matDef.properties.ContainsKey("stdMatBaseTextureName"))
                         {
                             var texName = matDef.properties["stdMatBaseTextureName"].ToLower() + "_txtr";
-                            var asset = new RCOLFile(ContentManager.Get().Provider.GetFromResourceMap(new ResourceKey(texName, 0x1C0532FA, 0x1C4A276C)));
-                            if (asset != null)
+                            var entry = ContentManager.Get().Provider.GetFromResourceMap(new ResourceKey(texName, 0x1C0532FA, 0x1C4A276C));
+                            if (entry != null)
                             {
-                                nMat.mainTexture = (asset.dataBlocks[0] as TXTRDataBlock).getTexture();
+                                var asset = new RCOLFile(entry);
+                                if (asset != null)
+                                {
+                                    nMat.mainTexture = (asset.dataBlocks[0] as TXTRDataBlock).getTexture();
+                                }
+                                else
+                                {
+                                    Debug.Log("Failed to load texture " + texName);
+                                }
+                                referenceList.Add(new CacheKey(new ResourceKey(texName, 0x1C0532FA, 0x1C4A276C)));
                             }
                             else
                             {
-                                Debug.Log("Failed to load texture " + texName);
+                                GameObject.Destroy(thisGroup);
+                                GameObject.Destroy(modelGameObject);
+                                return null;
                             }
-                            referenceList.Add(new CacheKey(new ResourceKey(texName, 0x1C0532FA, 0x1C4A276C)));
                         }
                         if (matDef.properties.ContainsKey("reflectivity"))
                         {
@@ -1179,18 +1189,28 @@ groupMaterialDefs:
                         if (matDef.properties.ContainsKey("stdMatNormalMapTextureName"))
                         {
                             var texName = matDef.properties["stdMatNormalMapTextureName"].ToLower() + "_txtr";
-                            var asset = new RCOLFile(ContentManager.Get().Provider.GetFromResourceMap(new ResourceKey(texName, 0x1C0532FA, 0x1C4A276C)));
-                            if (asset != null)
+                            var entry = ContentManager.Get().Provider.GetFromResourceMap(new ResourceKey(texName, 0x1C0532FA, 0x1C4A276C));
+                            if (entry != null)
                             {
-                                nMat.SetTexture("_BumpMap", (asset.dataBlocks[0] as TXTRDataBlock).getTexture());
-                                if ((asset.dataBlocks[0] as TXTRDataBlock).getTexture().format != TextureFormat.R8)
-                                    nMat.SetFloat("_BumpOrNormal", 1f);
+                                var asset = new RCOLFile(entry);
+                                if (asset != null)
+                                {
+                                    nMat.SetTexture("_BumpMap", (asset.dataBlocks[0] as TXTRDataBlock).getTexture());
+                                    if ((asset.dataBlocks[0] as TXTRDataBlock).getTexture().format != TextureFormat.R8)
+                                        nMat.SetFloat("_BumpOrNormal", 1f);
+                                }
+                                else
+                                {
+                                    Debug.Log("Failed to load texture " + texName);
+                                }
+                                referenceList.Add(new CacheKey(new ResourceKey(texName, 0x1C0532FA, 0x1C4A276C)));
                             }
                             else
                             {
-                                Debug.Log("Failed to load texture " + texName);
+                                GameObject.Destroy(thisGroup);
+                                GameObject.Destroy(modelGameObject);
+                                return null;
                             }
-                            referenceList.Add(new CacheKey(new ResourceKey(texName, 0x1C0532FA, 0x1C4A276C)));
                         }
                         if (nMat.name.ToLower().Contains("shadow"))
                         {
@@ -1204,7 +1224,9 @@ groupMaterialDefs:
                 renderer.sharedMaterials = materialList;
                 renderer.materials = materialList;
                 thisGroup.transform.parent = modelGameObject.transform;
+                Debug.Log($"{thisGroup.name} loaded");
             }
+            Debug.Log($"{modelGameObject.name} loaded");
             return modelGameObject;
         }
     }
@@ -1426,7 +1448,12 @@ groupMaterialDefs:
             var model = new ModelWrapper();
             model.Name = name;
             var cresFile = (name + "_cres").ToLower();
-            var testCres = new RCOLFile(ContentManager.Get().Provider.GetFromResourceMap(new ResourceKey(cresFile, 0x1C0532FA, 0xE519C933)));
+            var entry = ContentManager.Get().Provider.GetFromResourceMap(new ResourceKey(cresFile, 0x1C0532FA, 0xE519C933));
+            if (entry == null)
+            {
+                return null;
+            }
+            var testCres = new RCOLFile(entry);
             if (testCres == null)
                 return null;
             foreach (var element in testCres.dataBlocks)
@@ -1444,14 +1471,27 @@ groupMaterialDefs:
                             foreach (var element3 in shapeBlock.groupMaterials)
                             {
                                 var asset = ContentManager.Get().Provider.GetFromResourceMap(new ResourceKey(element3.Value.ToLower() + "_txmt", 0x1C0532FA, 0x49596978));
+                                if (asset == null)
+                                {
+                                    return null;
+                                }
                                 model.groupMaterialDefs[element3.Key] = (new RCOLFile(asset)).dataBlocks[0] as cMaterialDefinitionDataBlock;
                             }
                             var gmndFile = shapeBlock.GMNDFileName;
-                            var gmndAsset = new RCOLFile(ContentManager.Get().Provider.GetFromResourceMap(new ResourceKey(gmndFile.ToLower(), 0x1C0532FA, 0x7BA3838C)));
-                            var finalGMDC = (gmndAsset.dataBlocks[0] as cGeometryNodeDataBlock).targetName;
-                            var demGMDC = new RCOLFile(ContentManager.Get().Provider.GetFromResourceMap(new ResourceKey(finalGMDC.ToLower(), 0x1C0532FA, 0xAC4F8687))).dataBlocks[0] as GMDCDataBlock;
-                            model.GMDCData = demGMDC;
-                            return model;
+                            var gmndEntry = ContentManager.Get().Provider.GetFromResourceMap(new ResourceKey(gmndFile.ToLower(), 0x1C0532FA, 0x7BA3838C));
+                            if (gmndEntry != null)
+                            {
+                                var gmndAsset = new RCOLFile(gmndEntry);
+                                var finalGMDC = (gmndAsset.dataBlocks[0] as cGeometryNodeDataBlock).targetName;
+                                var gmdcEntry = ContentManager.Get().Provider.GetFromResourceMap(new ResourceKey(finalGMDC.ToLower(), 0x1C0532FA, 0xAC4F8687));
+                                if (gmdcEntry != null)
+                                {
+
+                                    var demGMDC = new RCOLFile(gmdcEntry).dataBlocks[0] as GMDCDataBlock;
+                                    model.GMDCData = demGMDC;
+                                    return model;
+                                }
+                            }
 
                         }
                     }

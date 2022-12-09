@@ -8,7 +8,14 @@ namespace OpenTS2.Game.Reimpl
 {
     public class TSBaseLotInfo
     {
-        public enum ZoneType : uint
+        public ZoneType LotType { get; internal set; }
+
+        internal void SetLotState(uint v)
+        {
+            throw new NotImplementedException();
+        }
+
+        public enum ZoneType : byte
         {
             kZoneType_Residential = 0,
             kZoneType_Community = 1,

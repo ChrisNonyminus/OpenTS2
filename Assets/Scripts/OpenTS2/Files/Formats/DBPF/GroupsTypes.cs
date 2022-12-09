@@ -21,6 +21,8 @@ namespace OpenTS2.Files.Formats.DBPF
         public const uint DIR = 0xE86B1EEF;
         public const uint GMDC = 0xAC4F8687;
         public const uint LIFO = 0xED534136;
+        public const uint LOT = 0x6C589723;
+        public const uint OBJT = 0xFA1C39F7;
         /// <summary>
         /// Can be XA or MP3.
         /// </summary>
