@@ -95,7 +95,7 @@ namespace OpenTS2.Engine.Tests
                         var gameObject = model.Spawn();
                         gameObject.transform.parent = lotObject.transform;
                         gameObject.transform.localPosition = new Vector3(objt.Coords.XCoord, objt.Coords.Height, objt.Coords.YCoord);
-                        gameObject.transform.rotation = new Quaternion(objt.Coords.Rotation.x, objt.Coords.Rotation.z, objt.Coords.Rotation.y, objt.Coords.Rotation.w);
+                        gameObject.transform.rotation = new Quaternion(objt.Coords.Rotation.x, -objt.Coords.Rotation.z, objt.Coords.Rotation.y, objt.Coords.Rotation.w);
                     }
                 }
             }
