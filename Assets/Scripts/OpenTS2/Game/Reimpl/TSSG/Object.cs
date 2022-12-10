@@ -11,9 +11,9 @@ namespace OpenTS2.Game.Reimpl.TSSG
     {
         public uint RecordType { get; set; } // always 0xFA1C39F7 (TypeIDs.OBJT)
         public uint Version { get; set; }
-        public string TypeName { get; set; } // "cObject"
+        public string TypeName { get; set; } // "cObject", "cPerson", "cAnimatable", "cLocomotable"
         public string ModelName { get; set; }
-        public class Entry
+        public class CObjectEntry
         {
             public class SubEntry
             {
@@ -25,7 +25,20 @@ namespace OpenTS2.Game.Reimpl.TSSG
             public uint NameType { get; set; }
             public List<SubEntry> SubEntries { get; set; }
         }
-        public List<Entry> Entries { get; set; }
+        public List<CObjectEntry> EntriesForcObject { get; set; }
+        public class CoordsSet
+        {
+            public float XCoord { get; set; }
+            public float YCoord { get; set; }
+            public float Height { get; set; } // in meters
+            public UnityEngine.Vector4 Rotation { get; set; } // quaternion
+        }
+
+        public class CAnimatableData
+        {
+            // Note: there seems to be no real data structure for cAnimatable, as I have observed cAnimatable OBJTs to just have another objt right after them that is a cObject
+        }
+
         public class MainCoords // Main coords are relative to lot
         {
             public float XCoord { get; set; }
@@ -40,7 +53,7 @@ namespace OpenTS2.Game.Reimpl.TSSG
                 public float Height { get; set; } // in meters
                 public UnityEngine.Vector4 Rotation { get; set; } // quaternion
             }
-            public List<CRESNodeEntryMaybe> CRESNodeEntries { get; set; } // Note: Entry 1's coords are relative to the lot. They change if the object is moved on the lot.
+            public List<CRESNodeEntryMaybe> CRESNodeEntries { get; set; } // Note: CObjectEntry 1's coords are relative to the lot. They change if the object is moved on the lot.
             public class BlendPairEntry
             {
                 public string BlendName { get; set; }

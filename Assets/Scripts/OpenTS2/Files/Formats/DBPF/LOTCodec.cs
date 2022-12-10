@@ -51,24 +51,24 @@ namespace OpenTS2.Files.Formats.DBPF
             {
                 asset.ModelName = reader.ReadSevenBitString();
                 uint numEntries = reader.ReadUInt32();
-                asset.Entries = new List<Game.Reimpl.TSSG.Object.Entry>();
+                asset.EntriesForcObject = new List<Game.Reimpl.TSSG.Object.CObjectEntry>();
                 for (int i = 0; i < numEntries; i++)
                 {
-                    var entry = new Game.Reimpl.TSSG.Object.Entry();
+                    var entry = new Game.Reimpl.TSSG.Object.CObjectEntry();
                     entry.Name = reader.ReadPascalString();
                     if (asset.Version == 0x11)
                         entry.NameType = reader.ReadUInt32();
-                    entry.SubEntries = new List<Game.Reimpl.TSSG.Object.Entry.SubEntry>();
+                    entry.SubEntries = new List<Game.Reimpl.TSSG.Object.CObjectEntry.SubEntry>();
                     var numSubEntries = reader.ReadUInt32();
                     for (int j = 0; j < numSubEntries; j++)
                     {
-                        var subEntry = new Game.Reimpl.TSSG.Object.Entry.SubEntry();
+                        var subEntry = new Game.Reimpl.TSSG.Object.CObjectEntry.SubEntry();
                         subEntry.LongName = reader.ReadPascalString();
                         subEntry.ShortName = reader.ReadPascalString();
 
                         entry.SubEntries.Add(subEntry);
                     }
-                    asset.Entries.Add(entry);
+                    asset.EntriesForcObject.Add(entry);
                 }
                 var mainCoords = new Game.Reimpl.TSSG.Object.MainCoords();
                 mainCoords.XCoord = reader.ReadFloat();
@@ -100,6 +100,72 @@ namespace OpenTS2.Files.Formats.DBPF
                         mainCoords.BlendPairEntries.Add(blendPairEntry);
                     }
                     asset.Coords = mainCoords;
+                }
+            }
+            else if (asset.TypeName == "cAnimatable")
+            {
+                // check if cAnimatable data does not exist and cObject structure follows instead (???)
+                asset.RecordType = reader.ReadUInt32();
+                asset.Version = reader.ReadUInt32();
+                asset.TypeName = reader.ReadPascalString();
+                if (asset.TypeName == "cObject")
+                {
+                    asset.ModelName = reader.ReadSevenBitString();
+                    uint numEntries = reader.ReadUInt32();
+                    asset.EntriesForcObject = new List<Game.Reimpl.TSSG.Object.CObjectEntry>();
+                    for (int i = 0; i < numEntries; i++)
+                    {
+                        var entry = new Game.Reimpl.TSSG.Object.CObjectEntry();
+                        entry.Name = reader.ReadPascalString();
+                        if (asset.Version == 0x11)
+                            entry.NameType = reader.ReadUInt32();
+                        entry.SubEntries = new List<Game.Reimpl.TSSG.Object.CObjectEntry.SubEntry>();
+                        var numSubEntries = reader.ReadUInt32();
+                        for (int j = 0; j < numSubEntries; j++)
+                        {
+                            var subEntry = new Game.Reimpl.TSSG.Object.CObjectEntry.SubEntry();
+                            subEntry.LongName = reader.ReadPascalString();
+                            subEntry.ShortName = reader.ReadPascalString();
+
+                            entry.SubEntries.Add(subEntry);
+                        }
+                        asset.EntriesForcObject.Add(entry);
+                    }
+                    var mainCoords = new Game.Reimpl.TSSG.Object.MainCoords();
+                    mainCoords.XCoord = reader.ReadFloat();
+                    mainCoords.YCoord = reader.ReadFloat();
+                    mainCoords.Height = reader.ReadFloat();
+                    mainCoords.Rotation = new Vector4(reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat());
+                    var numCresNodes = reader.ReadUInt32();
+                    mainCoords.CRESNodeEntries = new List<Game.Reimpl.TSSG.Object.MainCoords.CRESNodeEntryMaybe>();
+                    for (int i = 0; i < numCresNodes; i++)
+                    {
+                        var cresNodeEntry = new Game.Reimpl.TSSG.Object.MainCoords.CRESNodeEntryMaybe();
+                        cresNodeEntry.NodeName = reader.ReadPascalString();
+                        cresNodeEntry.XCoord = reader.ReadFloat();
+                        cresNodeEntry.YCoord = reader.ReadFloat();
+                        cresNodeEntry.Height = reader.ReadFloat();
+                        cresNodeEntry.Rotation = new Vector4(reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat());
+                        mainCoords.CRESNodeEntries.Add(cresNodeEntry);
+                    }
+                    if (asset.Version >= 0x10)
+                    {
+                        var numBlends = reader.ReadUInt32();
+                        mainCoords.BlendPairEntries = new List<Game.Reimpl.TSSG.Object.MainCoords.BlendPairEntry>();
+                        for (int i = 0; i < numBlends; i++)
+                        {
+                            var blendPairEntry = new Game.Reimpl.TSSG.Object.MainCoords.BlendPairEntry();
+                            blendPairEntry.BlendName = reader.ReadPascalString();
+                            blendPairEntry.BlendPartner = reader.ReadPascalString();
+                            blendPairEntry.TerminalZeroes = reader.ReadUInt32();
+                            mainCoords.BlendPairEntries.Add(blendPairEntry);
+                        }
+                        asset.Coords = mainCoords;
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("cAnimatable data might actually exist, but it's not implemented yet. File: " + asset.TGI.ToString());
                 }
             }
             return asset;

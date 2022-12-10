@@ -563,7 +563,10 @@ namespace OpenTS2.Files.Formats.RCOL
             Array.Reverse(textures);
             for (var i = 0; i < textures.Length - 1; i++)
             {
-                mipmappedTexture.SetPixels(textures[i].GetPixels(), i);
+                if (textures[i].width != 0 && textures[i].height != 0)
+                {
+                    mipmappedTexture.SetPixels(textures[i].GetPixels(), i);
+                }
             }
             mipmappedTexture.Apply();
             Array.Reverse(textures);
@@ -1021,6 +1024,10 @@ namespace OpenTS2.Files.Formats.RCOL
                     var deltas = new Vector3[verts.Count];
                     if (name == ", ")
                         continue;
+                    if (morphMap == null)
+                    {
+                        continue; // TODO
+                    }
                     for (var n = 0; n < morphMap.sets.Count; n++)
                     {
                         byte[] intBytes = BitConverter.GetBytes(morphMap.sets[n].blocks[0].integer);
@@ -1436,6 +1443,14 @@ groupMaterialDefs:
             for (var i = 0; i < items; i++)
             {
                 var blockName = reader.ReadVariableLengthPascalString();
+                if (!streams.ContainsKey(blockName))
+                {
+                    Debug.LogWarning($"RCOLFile: Block {blockName} not implemented!!!");
+
+                    reader.Dispose();
+                    stream.Dispose();
+                    return;
+                }
                 var dataBlock = streams[blockName].Read(reference.GetBytes(), reader, this);
                 dataBlocks.Add(dataBlock);
                 //Read data blocks
@@ -1467,6 +1482,10 @@ groupMaterialDefs:
                         if (shape != null)
                         {
                             var shapeAsset = new RCOLFile(shape);
+                            if (!(shapeAsset.dataBlocks[0] is cShapeDataBlock))
+                            {
+                                return null;
+                            }
                             var shapeBlock = shapeAsset.dataBlocks[0] as cShapeDataBlock;
                             foreach (var element3 in shapeBlock.groupMaterials)
                             {
@@ -1482,6 +1501,10 @@ groupMaterialDefs:
                             if (gmndEntry != null)
                             {
                                 var gmndAsset = new RCOLFile(gmndEntry);
+                                if (!(gmndAsset.dataBlocks[0] is cGeometryNodeDataBlock))
+                                {
+                                    return null;
+                                }
                                 var finalGMDC = (gmndAsset.dataBlocks[0] as cGeometryNodeDataBlock).targetName;
                                 var gmdcEntry = ContentManager.Get().Provider.GetFromResourceMap(new ResourceKey(finalGMDC.ToLower(), 0x1C0532FA, 0xAC4F8687));
                                 if (gmdcEntry != null)
@@ -1493,6 +1516,10 @@ groupMaterialDefs:
                                 }
                             }
 
+                        }
+                        else
+                        {
+                            return null;
                         }
                     }
                 }
